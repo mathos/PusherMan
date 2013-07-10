@@ -12,14 +12,14 @@ If you installed via pip or easy_install or the like, it should put a basic conf
 
 If you are using EC2 and using tags to setup a boto config file.  Like:
 
- $ cat ~/.boto
- [Credentials]
- aws_access_key_id = <Your Key Here>
- aws_secret_access_key = <Your Secret Here>
+    $ cat ~/.boto
+    [Credentials]
+    aws_access_key_id = <Your Key Here>
+    aws_secret_access_key = <Your Secret Here>
 
 There are some sample pusher scripts under samples. To execute them you can do:
 
- $ superfly -T Name:DEV_NODE_SERVERS install lessc
- $ superfly -H some.server.com -u a_user install lessc
+    $ superfly -T Name:DEV_NODE_SERVERS install lessc
+    $ superfly -H some.server.com -u a_user install lessc
 
 You will need to either be in the directory with lessc directory or use the full path to the lessc directory (or which ever pusher script you are installing).
