@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 __author__ = 'mathos'
+from os.path import expanduser
+home = expanduser("~")
+home += "/.pusher_man"
 
 
 from setuptools import setup, find_packages
@@ -19,7 +22,10 @@ setup(
     packages=find_packages(),
     test_suite='nose.collector',
     tests_require=['nose'],
-    install_requires=['Fabric>=1.6.0'],
+    install_requires=['distribute>=0.7.3', 'Fabric>=1.6.0', 'boto>=2.8.0', 'configobj==4.7.2'],
+    data_files=[
+        (home, ['config/pusher.conf'])
+    ],
     entry_points={
         'console_scripts': [
             'superfly = pusher_man.pusher_man:main',

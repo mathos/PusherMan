@@ -1,2 +1,4 @@
-Fabric>=1.4.2
+distribute==0.7.3
+Fabric>=1.6.0
 boto>=2.8.0
+configobj==4.7.2

@@ -7,8 +7,7 @@ sys.path.append(os.getcwd())
 import argparse
 from fabric.colors import yellow, green, blue
 from fabric.context_managers import settings
-import configuration as CONFIG
-from pusher_config import DEFAULT_PKGS
+from pusher_config import CONFIG_FILE, parse_configuration
 from peddlers.aws_env import ec2_digger
 from peddlers.package_installer import packages_update, package_install
 
@@ -19,8 +18,11 @@ class PusherMan(object):
     self_managing = ['pkg_management']
     ec2_connections = dict()
 
+    def __init__(self, config):
+        self.config = config
+
     def get_systems_info(self):
-        return ec2_digger(CONFIG.AWS_API_KEY, CONFIG.AWS_SECRET_KEY)
+        return ec2_digger()
 
     def process_step(self, step, if_true_step=None, if_false_step=None):
         if self.process_executer(step):
@@ -53,7 +55,7 @@ class PusherMan(object):
     def prepare(self):
         packages_update()
         print yellow("Installing pusherman default packages.  Dig?")
-        for package in DEFAULT_PKGS:
+        for package in self.config.get("defaults", {}).get("default_pkgs"):
             print "Installing Package: " + blue(package, bold=True)
             package_install(package)
 
@@ -67,11 +69,15 @@ class PusherMan(object):
 
         for server in server_list:
             print "Working on the cool cat: "+blue(server, bold=True)+"\n"
-            with settings(host_string=server, key_filename=CONFIG.LOCAL_AWS_KEY_FILE,
-                          user=user, connection_attempts=10,
-                          aws_key=CONFIG.AWS_API_KEY, aws_secret=CONFIG.AWS_SECRET_KEY):
+            with settings(host_string=server, key_filename=self.config.get("remote-access", {}).get("key-path"),
+                          user=user, connection_attempts=10):
                 self.prepare()
                 for superfly in superfly_list:
+                    if superfly.find("/") >= 0:
+                        superfly_path = superfly[0:superfly.rfind("/")]
+                        sys.path.append(superfly_path)
+                        superfly = superfly[superfly.rfind("/")+1:]
+
                     pusher = __import__(superfly + ".manage", fromlist=['Manage'])
                     pusher_man = pusher.Manage(server_list.get(server))
 
@@ -89,13 +95,19 @@ def main():
     group.add_argument('-T', dest="tag_value", metavar="tag:value",
                        help="Tag and value of instance(s) you want to install on")
     group.add_argument('-H', dest='host', help="Host name if using")
-    parser.add_argument('-u', dest='user', default=CONFIG.AWS_AMI_USERNAME, help="User name if using")
+    parser.add_argument('-u', dest='user', default=None, help="User name if using")
     parser.add_argument('install_classes', metavar="pusher_managers", nargs='+',
                         help="Pusher classes you want to install")
+    parser.add_argument('-c', dest='config_file', default=CONFIG_FILE, help="Config File Location")
 
     parser_data = parser.parse_args()
 
-    pushing = PusherMan()
+    config = parse_configuration(parser_data.config_file)
+
+    if parser_data.user is None:
+        parser_data.user = config.get("remote-access", {}).get("os-user")
+
+    pushing = PusherMan(config)
     print "\n"
 
     if parser_data.tag_value is not None:

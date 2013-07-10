@@ -4,21 +4,17 @@ from fabric.colors import red
 __author__ = 'mathos'
 
 
-def ec2_digger(aws_key, aws_secret):
-    zones = ['us-east-1', 'us-west-2']
-    api_key = aws_key
-    secret_key = aws_secret
+def ec2_digger():
+    zones = ['us-east-1', 'us-west-2', 'us-west-1']
 
     server_dict = dict()
     tag_dict = dict()
     for zone in zones:
-        ec2_conn = EC2Connection(api_key, secret_key, region=get_region(zone, aws_access_key_id=api_key,
-                                                                        aws_secret_access_key=secret_key))
+        ec2_conn = EC2Connection(region=get_region(zone))
         reservation = ec2_conn.get_all_instances()
         if len(reservation) <= 0:
             print red("No instances in " + zone + ", cool cat.")
         else:
-
             for r in reservation:
                 for i in r.instances:
                     instance = dict()
@@ -37,7 +33,6 @@ def ec2_digger(aws_key, aws_secret):
                                     tag_vals[tag_val.lower()] = []
                                 tag_vals[tag_val.lower()].append(getattr(i, 'dns_name'))
 
-                                #tag_dict[tag].append(getattr(i, 'dns_name'))
                         methods = dir(i)
                         for method in methods:
                             if not method.startswith("_"):
