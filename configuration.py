@@ -1,4 +1,0 @@
-AWS_API_KEY = ''
-AWS_SECRET_KEY = ''
-AWS_KEY_FILE = '' 
-LOCAL_AWS_KEY_FILE = '~/.ssh/' + AWS_KEY_FILE
